@@ -2,7 +2,7 @@
 LLM Service - Integración con modelos de lenguaje para respuestas inteligentes.
 ================================================================================
 Toma los datos crudos del motor analítico y genera respuestas con
-interpretación de negocio usando un LLM (Claude, OpenAI o Gemini).
+interpretación de negocio usando un LLM (Claude, OpenAI, Gemini o Groq).
 
 Si no hay API key configurada, retorna las respuestas base del motor
 analítico sin interpretación adicional.
@@ -15,7 +15,6 @@ from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-print(f"DEBUG LLM_PROVIDER={os.getenv('LLM_PROVIDER')} KEY={os.getenv('GEMINI_API_KEY', 'NO KEY')[:10]}")
 
 # Prompt del sistema para el LLM
 SYSTEM_PROMPT = """Eres un analista senior de marketing digital para CloudLabs Learning, 
@@ -58,6 +57,10 @@ class LLMService:
             return os.getenv("ANTHROPIC_API_KEY")
         elif self.provider == "gemini":
             return os.getenv("GEMINI_API_KEY")
+        elif self.provider == "groq":
+            return os.getenv("GROQ_API_KEY")
+        elif self.provider == "cerebras":
+            return os.getenv("CEREBRAS_API_KEY")
         return None
 
     async def generate_interpretation(
@@ -86,6 +89,10 @@ accionable para el equipo de Marketing de CloudLabs."""
                 return await self._call_claude(prompt)
             elif self.provider == "gemini":
                 return await self._call_gemini(prompt)
+            elif self.provider == "groq":
+                return await self._call_groq(prompt)
+            elif self.provider == "cerebras":
+                return await self._call_cerebras(prompt)
         except Exception as e:
             import traceback
             print(f"⚠️  Error LLM ({self.provider}): {type(e).__name__}: {e}")
@@ -135,6 +142,52 @@ accionable para el equipo de Marketing de CloudLabs."""
             )
             data = response.json()
             return data["content"][0]["text"]
+
+    async def _call_groq(self, prompt: str) -> str:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "max_tokens": 300,
+                    "temperature": 0.7,
+                },
+            )
+            data = response.json()
+            if "error" in data:
+                raise Exception(f"Groq API error: {data['error']['message']}")
+            return data["choices"][0]["message"]["content"]
+
+    async def _call_cerebras(self, prompt: str) -> str:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                "https://api.cerebras.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "llama-3.3-70b",
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "max_tokens": 300,
+                    "temperature": 0.7,
+                },
+            )
+            data = response.json()
+            if "error" in data:
+                raise Exception(f"Cerebras API error: {data['error']['message']}")
+            return data["choices"][0]["message"]["content"]
 
     async def _call_gemini(self, prompt: str) -> str:
         async with httpx.AsyncClient(timeout=30) as client:
