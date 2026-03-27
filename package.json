@@ -1,0 +1,12 @@
+{
+  "name": "marketing-copilot-monorepo-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "browser:vercel": "node scripts/playwright-manual-login.mjs vercel",
+    "browser:render": "node scripts/playwright-manual-login.mjs render"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1"
+  }
+}
