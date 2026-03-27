@@ -6,7 +6,8 @@
     "browser:vercel": "node scripts/playwright-manual-login.mjs vercel",
     "browser:render": "node scripts/playwright-manual-login.mjs render",
     "browser:vercel:dashboard": "node scripts/playwright-vercel-workspace.mjs",
-    "browser:vercel:project": "node scripts/playwright-vercel-project.mjs"
+    "browser:vercel:project": "node scripts/playwright-vercel-project.mjs",
+    "vercel:apply": "node scripts/vercel-apply-config.mjs"
   },
   "devDependencies": {
     "playwright": "^1.49.1"
