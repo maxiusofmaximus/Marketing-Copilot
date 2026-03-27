@@ -1,0 +1,120 @@
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p>Resumen ejecutivo del comportamiento web de CloudLabs</p>
+</div>
+
+<div *ngIf="loading" class="loading">
+  <div class="spinner"></div> Cargando datos…
+</div>
+
+<ng-container *ngIf="!loading && data">
+
+  <!-- KPIs -->
+  <div class="grid grid-4" style="margin-bottom:1.25rem">
+    <app-kpi-card icon="👥" title="Sesiones totales"
+      [value]="formatNum(data.summary.total_sessions)" accent="default"></app-kpi-card>
+    <app-kpi-card icon="🙋" title="Usuarios únicos"
+      [value]="formatNum(data.summary.unique_users)" accent="success"></app-kpi-card>
+    <app-kpi-card icon="⏱️" title="Duración promedio"
+      [value]="formatDuration(data.summary.avg_duration_seconds)"
+      subtitle="por sesión" accent="default"></app-kpi-card>
+    <app-kpi-card icon="📄" title="Páginas / sesión"
+      [value]="data.summary.avg_pages_per_session ?? '—'" accent="default"></app-kpi-card>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:2rem">
+    <app-kpi-card icon="↩️" title="Tasa de rebote"
+      [value]="(data.summary.bounce_rate ?? 0) + '%'"
+      accent="warning"></app-kpi-card>
+    <app-kpi-card icon="😤" title="Frustración"
+      [value]="(data.summary.frustration_rate ?? 0) + '%'"
+      accent="danger"></app-kpi-card>
+    <app-kpi-card icon="🖱️" title="Clics / sesión"
+      [value]="data.summary.avg_clicks_per_session ?? '—'" accent="default"></app-kpi-card>
+    <app-kpi-card icon="⚡" title="Engagement score"
+      [value]="data.summary.avg_engagement_score ?? '—'" accent="success"></app-kpi-card>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="grid grid-2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-title">📈 Páginas más visitadas</div>
+      <div style="height:280px">
+        <app-chart [data]="topPagesChart" [height]="280"></app-chart>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🕐 Tráfico por hora</div>
+      <div style="height:280px">
+        <app-chart [data]="hourlyChart" [height]="280"></app-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="grid grid-2" style="margin-bottom:2rem">
+    <div class="card">
+      <div class="card-title">📱 Dispositivos</div>
+      <div style="height:240px">
+        <app-chart [data]="deviceChart" [height]="240"></app-chart>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌎 Países</div>
+      <div style="height:240px">
+        <app-chart [data]="countryChart" [height]="240"></app-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abandono table -->
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-title">🚪 Puntos críticos de abandono</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Página</th>
+            <th>Salidas</th>
+            <th>Tasa de salida</th>
+            <th>Bounce rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of data.abandono">
+            <td><span class="page-url">{{ row.page }}</span></td>
+            <td>{{ formatNum(row.exit_count) }}</td>
+            <td>
+              <span class="badge" [ngClass]="row.exit_rate > 60 ? 'badge-danger' : row.exit_rate > 40 ? 'badge-warning' : 'badge-success'">
+                {{ row.exit_rate }}%
+              </span>
+            </td>
+            <td>{{ row.bounce_rate !== undefined ? row.bounce_rate + '%' : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Flujos table -->
+  <div class="card">
+    <div class="card-title">🔀 Flujos de navegación más frecuentes</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Entrada</th><th></th><th>Salida</th><th>Sesiones</th><th>%</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of data.flujos">
+            <td>{{ row.entrada }}</td>
+            <td style="color:var(--accent)">→</td>
+            <td>{{ row.salida }}</td>
+            <td>{{ formatNum(row.count) }}</td>
+            <td><span class="badge badge-accent">{{ row.percentage }}%</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</ng-container>

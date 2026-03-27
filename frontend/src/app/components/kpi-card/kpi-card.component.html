@@ -1,0 +1,8 @@
+<div class="kpi-card" [ngClass]="accent">
+  <div class="kpi-icon">{{ icon }}</div>
+  <div class="kpi-body">
+    <div class="kpi-title">{{ title }}</div>
+    <div class="kpi-value">{{ value }}</div>
+    <div class="kpi-subtitle" *ngIf="subtitle">{{ subtitle }}</div>
+  </div>
+</div>

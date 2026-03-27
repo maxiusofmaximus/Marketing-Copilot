@@ -1,0 +1,294 @@
+<div class="page-header">
+  <h1>Analytics</h1>
+  <p>Exploración detallada de cada dimensión analítica</p>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button *ngFor="let tab of tabs"
+          class="tab-btn"
+          [class.active]="activeTab === tab.id"
+          (click)="selectTab(tab.id)">
+    <span>{{ tab.icon }}</span> {{ tab.label }}
+  </button>
+</div>
+
+<div *ngIf="loading" class="loading">
+  <div class="spinner"></div> Cargando…
+</div>
+
+<!-- ── TOP PÁGINAS ───────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'pages'">
+  <div class="grid grid-2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-title">Ranking de páginas más visitadas</div>
+      <div style="height:320px">
+        <app-chart [data]="pagesChart" [height]="320"></app-chart>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle por página</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>#</th><th>Página</th><th>Sesiones</th><th>%</th><th>Eng.</th><th>Duración</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of topPages; let i = index">
+              <td style="color:var(--text-muted)">{{ i+1 }}</td>
+              <td class="url-cell">{{ p.page }}</td>
+              <td>{{ fmtNum(p.sessions) }}</td>
+              <td><span class="badge badge-accent">{{ p.percentage }}%</span></td>
+              <td>{{ fmt(p.avg_engagement, 3) }}</td>
+              <td>{{ fmt(p.avg_duration_sec) }}s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── ABANDONO ──────────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'abandono'">
+  <div class="grid grid-2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-title">Páginas con más salidas</div>
+      <div style="height:320px">
+        <app-chart [data]="abandonoChart" [height]="320"></app-chart>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle de abandono</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Página</th><th>Salidas</th><th>Tasa salida</th><th>Bounce</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of abandono">
+              <td class="url-cell">{{ p.page }}</td>
+              <td>{{ fmtNum(p.exit_count) }}</td>
+              <td>
+                <span class="badge" [ngClass]="p.exit_rate > 60 ? 'badge-danger' : p.exit_rate > 40 ? 'badge-warning' : 'badge-success'">
+                  {{ p.exit_rate }}%
+                </span>
+              </td>
+              <td>{{ p.bounce_rate !== undefined ? p.bounce_rate + '%' : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── INTERACCIÓN ───────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'interaccion'">
+  <div class="card">
+    <div class="card-title">Métricas de interacción promedio por página</div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Página</th><th>Sesiones</th><th>Clics/sesión</th>
+            <th>Tiempo/pág</th><th>Duración</th><th>Engagement</th><th>Páginas/sesión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of interaccion">
+            <td class="url-cell">{{ p.page }}</td>
+            <td>{{ fmtNum(p.sessions) }}</td>
+            <td>{{ fmt(p.avg_clicks_session) }}</td>
+            <td>{{ fmt(p.avg_time_page) }}s</td>
+            <td>{{ fmt(p.avg_duration) }}s</td>
+            <td>
+              <span class="badge" [ngClass]="(p.avg_engagement ?? 0) > 0.5 ? 'badge-success' : (p.avg_engagement ?? 0) > 0.25 ? 'badge-warning' : 'badge-danger'">
+                {{ fmt(p.avg_engagement, 3) }}
+              </span>
+            </td>
+            <td>{{ fmt(p.avg_pages) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── CONVERSIÓN ────────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'conversion'">
+  <div class="grid grid-2" style="margin-bottom:1.25rem">
+    <div class="card">
+      <div class="card-title">Tasa de alcance por página de conversión</div>
+      <div style="height:300px">
+        <app-chart [data]="conversionChart" [height]="300"></app-chart>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle de conversión</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Página</th><th>Alcanzaron</th><th>Total</th><th>Tasa</th><th>Engagement prev.</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of conversion">
+              <td class="url-cell">{{ p.conversion_page }}</td>
+              <td>{{ fmtNum(p.sessions_reached) }}</td>
+              <td>{{ fmtNum(p.total_sessions) }}</td>
+              <td><span class="badge badge-success">{{ fmt(p.reach_rate) }}%</span></td>
+              <td>{{ fmt(p.avg_engagement, 3) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── PÁGINAS TRAMPA ────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'trampa'">
+  <div class="card">
+    <div class="info-banner">
+      ⚠️ <strong>Páginas trampa:</strong> atraen mucho tráfico pero tienen bajo engagement y alta tasa de rebote. Son candidatas a optimización urgente.
+    </div>
+    <div class="table-wrapper" style="margin-top:1rem">
+      <table>
+        <thead>
+          <tr><th>Página</th><th>Sesiones</th><th>Trap Score</th><th>Bounce rate</th><th>Engagement</th><th>Duración</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of trapPages">
+            <td class="url-cell">{{ p.page }}</td>
+            <td>{{ fmtNum(p.sessions) }}</td>
+            <td><span class="badge" [ngClass]="trapColor(p.trap_score)">{{ fmt(p.trap_score, 3) }}</span></td>
+            <td>{{ p.bounce_rate !== undefined ? (p.bounce_rate * 100 | number:'1.1-1') + '%' : '—' }}</td>
+            <td>{{ fmt(p.avg_engagement, 3) }}</td>
+            <td>{{ fmt(p.avg_duration) }}s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ── FRUSTRACIÓN ───────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'frustracion' && frustration">
+
+  <!-- Source: recordings -->
+  <ng-container *ngIf="frustration.source === 'recordings'">
+    <div class="grid grid-3" style="margin-bottom:1.25rem">
+      <app-kpi-card icon="😤" title="Sesiones con frustración"
+        [value]="fmtNum(frustration.frustrated_sessions)" accent="danger"></app-kpi-card>
+      <app-kpi-card icon="📊" title="Total sesiones"
+        [value]="fmtNum(frustration.total_sessions)" accent="default"></app-kpi-card>
+      <app-kpi-card icon="📈" title="Tasa de frustración"
+        [value]="fmt(frustration.frustration_rate) + '%'" accent="warning"></app-kpi-card>
+    </div>
+    <div class="card">
+      <div class="card-title">Páginas con más sesiones frustradas</div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Página</th><th>Sesiones frustradas</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of frustration.top_frustrated_pages">
+              <td class="url-cell">{{ p.page }}</td>
+              <td><span class="badge badge-danger">{{ fmtNum(p.count) }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Source: metrics (DeadClicks, RageClicks, etc.) -->
+  <ng-container *ngIf="frustration.source === 'metrics' && frustration.by_metric">
+    <div *ngFor="let metricName of ['DeadClickCount','RageClickCount','ExcessiveScrollCount','QuickBackCount']">
+      <div *ngIf="frustration.by_metric![metricName]" class="card" style="margin-bottom:1.25rem">
+        <div class="card-title">{{ metricName }}</div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Página</th><th>Sesiones</th><th>% Afectadas</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of frustration.by_metric![metricName]">
+                <td class="url-cell">{{ row['url_clean'] }}</td>
+                <td>{{ fmtNum(row['total_sessions']) }}</td>
+                <td><span class="badge badge-warning">{{ fmt(row['affected_pct']) }}%</span></td>
+                <td>{{ fmtNum(row['subtotal']) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+
+<!-- ── SEGMENTACIÓN ──────────────────────────────────── -->
+<ng-container *ngIf="!loading && activeTab === 'segmentacion' && segmentation">
+  <div class="grid grid-2">
+
+    <div class="card" *ngIf="segmentation.by_device">
+      <div class="card-title">📱 Por dispositivo</div>
+      <div class="seg-list">
+        <div *ngFor="let item of segmentation.by_device" class="seg-row">
+          <span class="seg-name">{{ item.name }}</span>
+          <div class="seg-bar-wrap">
+            <div class="seg-bar" [style.width.%]="item.percentage"></div>
+          </div>
+          <span class="seg-pct">{{ item.percentage }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="segmentation.by_country">
+      <div class="card-title">🌎 Por país</div>
+      <div class="seg-list">
+        <div *ngFor="let item of segmentation.by_country" class="seg-row">
+          <span class="seg-name">{{ item.name }}</span>
+          <div class="seg-bar-wrap">
+            <div class="seg-bar" [style.width.%]="item.percentage"></div>
+          </div>
+          <span class="seg-pct">{{ item.percentage }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="segmentation.by_browser">
+      <div class="card-title">🌐 Por navegador</div>
+      <div class="seg-list">
+        <div *ngFor="let item of segmentation.by_browser" class="seg-row">
+          <span class="seg-name">{{ item.name }}</span>
+          <div class="seg-bar-wrap">
+            <div class="seg-bar" [style.width.%]="item.percentage"></div>
+          </div>
+          <span class="seg-pct">{{ item.percentage }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="segmentation.by_os">
+      <div class="card-title">💻 Por sistema operativo</div>
+      <div class="seg-list">
+        <div *ngFor="let item of segmentation.by_os" class="seg-row">
+          <span class="seg-name">{{ item.name }}</span>
+          <div class="seg-bar-wrap">
+            <div class="seg-bar" [style.width.%]="item.percentage"></div>
+          </div>
+          <span class="seg-pct">{{ item.percentage }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="segmentation.traffic_source">
+      <div class="card-title">🔗 Fuente de tráfico</div>
+      <div class="traffic-source">
+        <div class="ts-row">
+          <span class="badge badge-accent">Externo</span>
+          <span>{{ fmtNum(segmentation.traffic_source.external) }} sesiones</span>
+          <span class="ts-pct">{{ segmentation.traffic_source.external_pct }}%</span>
+        </div>
+        <div class="ts-row">
+          <span class="badge badge-success">Directo</span>
+          <span>{{ fmtNum(segmentation.traffic_source.direct) }} sesiones</span>
+          <span class="ts-pct">{{ fmt(100 - segmentation.traffic_source.external_pct) }}%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ng-container>

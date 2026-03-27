@@ -1,0 +1,25 @@
+<nav class="sidebar">
+  <div class="brand">
+    <span class="brand-icon">🚀</span>
+    <div>
+      <div class="brand-name">Marketing Copilot</div>
+      <div class="brand-sub">CloudLabs · Talento Tech</div>
+    </div>
+  </div>
+
+  <ul class="nav-list">
+    <li *ngFor="let item of navItems">
+      <a [routerLink]="item.route"
+         [class.active]="router.url === item.route"
+         class="nav-item">
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <div class="status-dot"></div>
+    <span>API conectada</span>
+  </div>
+</nav>

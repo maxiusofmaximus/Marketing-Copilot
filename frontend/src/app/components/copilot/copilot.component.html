@@ -1,0 +1,73 @@
+<div class="copilot-layout">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Co-piloto IA 🤖</h1>
+    <p>Haz preguntas en lenguaje natural sobre los datos de CloudLabs</p>
+  </div>
+
+  <!-- Chat window -->
+  <div class="chat-container">
+    <div class="messages-area">
+
+      <div *ngFor="let msg of messages" class="message-row" [ngClass]="msg.role">
+        <div class="avatar">{{ msg.role === 'user' ? '🧑' : '🤖' }}</div>
+        <div class="bubble">
+          <div class="bubble-text" [style.white-space]="'pre-line'">{{ msg.text }}</div>
+
+          <!-- AI interpretation block -->
+          <div *ngIf="msg.interpretation" class="interpretation">
+            <div class="interp-label">💡 Interpretación IA</div>
+            <div class="interp-text">{{ msg.interpretation }}</div>
+          </div>
+
+          <!-- Chart -->
+          <div *ngIf="msg.chart" class="chart-block">
+            <app-chart [data]="msg.chart" [height]="220"></app-chart>
+          </div>
+
+          <div class="bubble-time">{{ msg.timestamp | date:'HH:mm' }}</div>
+        </div>
+      </div>
+
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="message-row bot">
+        <div class="avatar">🤖</div>
+        <div class="bubble">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div #messagesEnd></div>
+    </div>
+
+    <!-- Suggested questions -->
+    <div *ngIf="showSuggestions && suggestedQuestions.length" class="suggestions">
+      <div class="suggestions-label">Preguntas sugeridas:</div>
+      <div class="suggestions-chips">
+        <button *ngFor="let q of suggestedQuestions"
+                class="chip" (click)="send(q)">{{ q }}</button>
+      </div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="input-bar">
+      <textarea
+        [(ngModel)]="inputText"
+        (keydown)="onKey($event)"
+        placeholder="Pregunta algo… ej: ¿Cuál fue la página más visitada?"
+        rows="1"
+        [disabled]="loading">
+      </textarea>
+      <button class="send-btn" (click)="send()" [disabled]="!inputText.trim() || loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</div>
