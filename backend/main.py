@@ -1,6 +1,9 @@
 """
 Marketing Copilot Backend - CloudLabs Hackathon Talento Tech 2026
 """
+import os
+from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
@@ -10,26 +13,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import analytics, chat, dashboard
 from app.services.data_loader import DataLoader
 
-app = FastAPI(
-    title="Marketing Copilot API",
-    description="Co-piloto de Marketing impulsado por análisis de datos e IA",
-    version="1.0.0",
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # ─── Data loader global ───────────────────────────────────────
 data_loader = DataLoader()
 
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     data_loader.load_data()
     print("=" * 60)
     print("✅ Marketing Copilot API lista")
@@ -37,6 +26,32 @@ async def startup_event():
     print(f"   Metrics:    {len(data_loader.metrics)} filas")
     print(f"   Usuarios:   {data_loader.total_sessions()}")
     print("=" * 60)
+    yield
+
+
+app = FastAPI(
+    title="Marketing Copilot API",
+    description="Co-piloto de Marketing impulsado por análisis de datos e IA",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# Orígenes permitidos: en producción fija FRONTEND_ORIGIN (ej. https://tu-app.vercel.app)
+_origins = os.getenv("FRONTEND_ORIGIN", "").strip()
+if _origins:
+    _cors = [o.strip() for o in _origins.split(",") if o.strip()]
+    _cred = True
+else:
+    _cors = ["*"]
+    _cred = False  # * + credentials no es válido en Starlette
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors,
+    allow_credentials=_cred,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(analytics.router, prefix="/api", tags=["Analytics"])

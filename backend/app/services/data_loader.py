@@ -13,13 +13,20 @@ import glob
 import re
 
 
+def _default_data_dir() -> str:
+    """Ruta absoluta a backend/data (funciona en local, Docker y Render con cwd distinto)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    backend_root = os.path.dirname(os.path.dirname(here))
+    return os.path.join(backend_root, "data")
+
+
 class DataLoader:
     """
     Carga ambos CSVs de Clarity, los limpia y normaliza.
     """
 
-    def __init__(self, data_dir: str = "data"):
-        self.data_dir = data_dir
+    def __init__(self, data_dir: str | None = None):
+        self.data_dir = data_dir if data_dir is not None else _default_data_dir()
         self.recordings: pd.DataFrame = pd.DataFrame()  # Sesiones individuales
         self.metrics: pd.DataFrame = pd.DataFrame()      # Métricas agregadas
         self.is_loaded: bool = False

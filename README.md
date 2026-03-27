@@ -91,6 +91,21 @@ App disponible en: `http://localhost:4200`
 
 ---
 
+## Despliegue en producción (Vercel + Render)
+
+El repositorio es **Angular 17 + FastAPI**, no Next.js. Para un backend con **pandas** y CSVs grandes, la opción estable es:
+
+1. **Backend (Render, gratis):** en el [dashboard de Render](https://dashboard.render.com), crea un *Web Service* desde el repo, o usa el `render.yaml` de la raíz. Raíz del servicio: `backend`. Añade variables de entorno:
+   - `LLM_PROVIDER=cerebras`
+   - `CEREBRAS_API_KEY` (secreto)
+   - `FRONTEND_ORIGIN` = URL de tu frontend en Vercel (recomendado para CORS)
+2. **Frontend (Vercel):** crea un proyecto con **Root Directory** = `frontend`. En *Environment Variables* (Build) define **`API_URL`** = `https://TU-SERVICIO.onrender.com/api` (sin barra final extra). El build ejecuta `npm run build:vercel`, que inyecta esa URL en el bundle.
+3. Vuelve a desplegar el frontend tras copiar la URL pública del API de Render.
+
+Documentación: [Render Blueprints](https://render.com/docs/blueprint-spec), [Vercel Project Settings](https://vercel.com/docs/projects/overview).
+
+---
+
 ## Configuración del LLM (backend/.env)
 
 El sistema funciona sin LLM (devuelve los datos del motor analítico). Para activar la interpretación de IA, configura uno de los siguientes proveedores en `backend/.env`:

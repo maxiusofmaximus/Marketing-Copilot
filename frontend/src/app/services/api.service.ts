@@ -7,10 +7,11 @@ import {
   ConversionMetric, Segmentation, TrapPage, FrustrationData,
   HourlyEngagement, SuggestedQuestions
 } from '../models/api.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly base = 'http://localhost:8000/api';
+  private readonly base = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

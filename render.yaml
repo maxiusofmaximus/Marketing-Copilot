@@ -1,0 +1,24 @@
+# Despliegue del backend FastAPI en Render (plan gratuito).
+# https://render.com/docs/deploys
+#
+# Tras el primer deploy, en el dashboard de Render añade:
+#   CEREBRAS_API_KEY  (secreto)
+#   FRONTEND_ORIGIN   https://tu-app.vercel.app  (opcional, recomendado en prod)
+#
+# Luego en Vercel define API_URL = https://<tu-servicio>.onrender.com/api
+
+services:
+  - type: web
+    name: marketing-copilot-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LLM_PROVIDER
+        value: cerebras
+      - key: CEREBRAS_API_KEY
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
