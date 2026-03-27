@@ -6,7 +6,14 @@ El backend **no es Render** escrito “Redos”: la plataforma del API se llama 
 
 1. **Crea un token** (solo para tu cuenta): [vercel.com/account/tokens](https://vercel.com/account/tokens)
 2. Copia la **URL de tu API en Render** (por ejemplo `https://algo.onrender.com`). La API debe responder en `.../api/health`.
-3. En **PowerShell**, en la carpeta raíz del repo:
+3. **Opción A (sin variables en la terminal):** en la raíz del repo crea el archivo **`.vercel-token`** (no se sube a Git) con exactamente **dos líneas**: línea 1 = token, línea 2 = `https://TU-SERVICIO.onrender.com/api`. Luego ejecuta:
+
+```powershell
+cd "ruta\a\Marketing-Copilot"
+powershell -ExecutionPolicy Bypass -File scripts/apply-local.ps1
+```
+
+3. **Opción B:** en **PowerShell**, en la carpeta raíz del repo:
 
 ```powershell
 cd "ruta\a\Marketing-Copilot"

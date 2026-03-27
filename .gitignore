@@ -2,3 +2,6 @@
 .playwright-user-data/
 playwright-*-storage.json
 /node_modules/
+
+# Token local (no subir nunca)
+.vercel-token
